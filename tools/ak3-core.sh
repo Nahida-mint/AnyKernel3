@@ -97,16 +97,17 @@ split_boot() {
     mv -f boot.img-kernel kernel.gz;
     mv -f boot.img-ramdisk ramdisk.cpio.gz;
     mv -f boot.img-cmdline cmdline.txt 2>/dev/null;
-    if [ -f boot.img-dt -a ! -f "$BIN/elftool" ]; then
-      case $(od -ta -An -N4 boot.img-dt | sed -e 's/ del//' -e 's/   //g') in
-        QCDT|ELF) mv -f boot.img-dt dt;;
-        *)
-          gzip -c kernel.gz > kernel.gz-dtb;
-          cat boot.img-dt >> kernel.gz-dtb;
-          rm -f boot.img-dt kernel.gz;
-        ;;
-      esac;
-    fi;
+if [ -f boot.img-dt -a ! -f "$BIN/elftool" ]; then
+  case $(od -ta -An -N4 boot.img-dt | sed -e 's/ del//' -e 's/   //g') in
+    QCDT|ELF) mv -f boot.img-dt dt;;
+    *)
+      # gzip -c kernel.gz > kernel.gz-dtb;
+      # cat boot.img-dt >> kernel.gz-dtb;
+      # rm -f boot.img-dt kernel.gz;
+      mv -f boot.img-dt dt;
+    ;;
+  esac;
+fi;
   elif [ -f "$BIN/mboot" ]; then
     mboot -u -f $BOOTIMG;
   elif [ -f "$BIN/dumpimage" ]; then
@@ -378,9 +379,9 @@ flash_boot() {
             mv -f kernel.$comp kernel;
           fi;
         else
-          case $kernel in
-            *-dtb) rm -f kernel_dtb;;
-          esac;
+# case $kernel in
+#   *-dtb) rm -f kernel_dtb;;
+# esac;
         fi;
         unset magisk_patched KEEPVERITY KEEPFORCEENCRYPT RECOVERYMODE PREINITDEVICE SHA1 RANDOMSEED; # leave PATCHVBMETAFLAG set for repack
       ;;
